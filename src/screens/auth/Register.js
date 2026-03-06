@@ -10,12 +10,25 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import CustomTextInput from '../../components/CustomTextInput';
-import { ROUTES } from '../../utils';
 
-const Login = () => {
-  const [emailAdd, setEmailAdd] = useState('');
+const Register = () => {
+  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const navigation = useNavigation();
+
+  const handleRegister = () => {
+    if (!username || !email || !password || !confirmPassword) {
+      Alert.alert('Missing Fields', 'Please fill in all fields.');
+      return;
+    }
+    if (password !== confirmPassword) {
+      Alert.alert('Password Mismatch', 'Passwords do not match.');
+      return;
+    }
+    // TODO: call your register API
+  };
 
   return (
     <KeyboardAvoidingView
@@ -24,14 +37,25 @@ const Login = () => {
     >
       <View style={styles.inner}>
         {/* Brand */}
-        <Text style={styles.brand}>NATURAE</Text>
+        <Text style={styles.brand}>NATURAE SKINCARE</Text>
+        <Text style={styles.subtitle}>Create your account</Text>
 
         {/* Form */}
         <View style={styles.form}>
           <Text style={styles.label}>Username</Text>
           <CustomTextInput
             placeholder="Username"
-            value={val => setEmailAdd(val)}
+            value={val => setUsername(val)}
+            containerStyle={styles.inputContainer}
+            textStyle={styles.inputText}
+          />
+
+          <Text style={styles.label}>Email Address</Text>
+          <CustomTextInput
+            placeholder="Email Address"
+            keyboardType="email-address"
+            autoCapitalize="none"
+            value={val => setEmail(val)}
             containerStyle={styles.inputContainer}
             textStyle={styles.inputText}
           />
@@ -41,29 +65,36 @@ const Login = () => {
             placeholder="Password"
             secureTextEntry
             value={val => setPassword(val)}
+            containerStyle={styles.inputContainer}
+            textStyle={styles.inputText}
+          />
+
+          <Text style={styles.label}>Confirm Password</Text>
+          <CustomTextInput
+            placeholder="Confirm Password"
+            secureTextEntry
+            value={val => setConfirmPassword(val)}
             containerStyle={[styles.inputContainer, { marginBottom: 0 }]}
             textStyle={styles.inputText}
           />
         </View>
 
-        {/* Login Button */}
+        {/* Register Button */}
         <TouchableOpacity
-          style={styles.loginBtn}
-          onPress={() => {
-            if (!emailAdd || !password) {
-              Alert.alert('Incorrect Credentials', 'Please try again!');
-              return;
-            }
-          }}
+          style={styles.registerBtn}
+          onPress={handleRegister}
           activeOpacity={0.85}
         >
-          <Text style={styles.loginBtnText}>Log In</Text>
+          <Text style={styles.registerBtnText}>Create Account</Text>
         </TouchableOpacity>
 
-        {/* Forgot */}
-        <TouchableOpacity style={styles.forgotWrap}>
-          <Text style={styles.forgotText}>Forgot Login?</Text>
-        </TouchableOpacity>
+        {/* Login link */}
+        <View style={styles.loginRow}>
+          <Text style={styles.loginText}>Already have an account? </Text>
+          <TouchableOpacity onPress={() => navigation.goBack()}>
+            <Text style={styles.loginLink}>Log In</Text>
+          </TouchableOpacity>
+        </View>
 
         {/* Support */}
         <View style={styles.supportWrap}>
@@ -73,14 +104,6 @@ const Login = () => {
             <Text style={styles.supportDivider}>  |  </Text>
             <Text style={styles.supportLink}>✉️ Email</Text>
           </View>
-        </View>
-
-        {/* Register link */}
-        <View style={styles.registerRow}>
-          <Text style={styles.registerText}>Don't have an account? </Text>
-          <TouchableOpacity onPress={() => navigation.navigate(ROUTES.REGISTER)}>
-            <Text style={styles.registerLink}>Register</Text>
-          </TouchableOpacity>
         </View>
       </View>
     </KeyboardAvoidingView>
@@ -110,7 +133,15 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     textAlign: 'center',
     letterSpacing: 2,
-    marginBottom: 48,
+    marginBottom: 6,
+  },
+  subtitle: {
+    color: SAND,
+    fontSize: 14,
+    textAlign: 'center',
+    marginBottom: 36,
+    fontWeight: '500',
+    letterSpacing: 0.4,
   },
   form: {
     marginBottom: 24,
@@ -141,7 +172,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 13,
   },
-  loginBtn: {
+  registerBtn: {
     backgroundColor: OLIVE,
     borderRadius: 10,
     paddingVertical: 16,
@@ -153,27 +184,31 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     elevation: 6,
   },
-  loginBtnText: {
+  registerBtnText: {
     color: WHITE,
     fontSize: 17,
     fontWeight: '700',
     letterSpacing: 0.8,
   },
-  forgotWrap: {
-    alignItems: 'center',
-    marginBottom: 40,
+  loginRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginBottom: 36,
   },
-  forgotText: {
-    color: SAND,
+  loginText: {
+    color: OLIVE_LT,
     fontSize: 14,
-    fontWeight: '500',
+  },
+  loginLink: {
+    color: OLIVE_DK,
+    fontSize: 14,
+    fontWeight: '700',
   },
   supportWrap: {
     alignItems: 'center',
     borderTopWidth: 1,
     borderTopColor: 'rgba(183,155,127,0.25)',
     paddingTop: 20,
-    marginBottom: 24,
   },
   supportTitle: {
     color: OLIVE_DK,
@@ -193,19 +228,6 @@ const styles = StyleSheet.create({
     color: 'rgba(183,155,127,0.4)',
     fontSize: 13,
   },
-  registerRow: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-  },
-  registerText: {
-    color: OLIVE_LT,
-    fontSize: 14,
-  },
-  registerLink: {
-    color: OLIVE_DK,
-    fontSize: 14,
-    fontWeight: '700',
-  },
 });
 
-export default Login;
+export default Register;
