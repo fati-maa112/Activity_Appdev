@@ -6,17 +6,21 @@ const CustomTextInput = ({
   label,
   labelStyle,
   value,
+  onChangeText,
   containerStyle,
   textStyle,
+  ...props
 }) => {
-  const { width, height } = Dimensions.get('window');
+  const { width } = Dimensions.get('window');
 
   return (
     <View style={containerStyle}>
-      <Text style={labelStyle}>{label}</Text>
+      {/* Only render label if it's a string */}
+      {typeof label === 'string' && label.length > 0 ? <Text style={labelStyle}>{label}</Text> : null}
       <TextInput
         placeholder={placeholder}
-        onChangeText={value}
+        value={value}
+        onChangeText={onChangeText}
         style={[
           textStyle,
           {
@@ -24,6 +28,7 @@ const CustomTextInput = ({
             borderBottomWidth: 1,
           },
         ]}
+        {...props}
       />
     </View>
   );
