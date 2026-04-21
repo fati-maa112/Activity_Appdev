@@ -1,15 +1,32 @@
 import React from 'react';
-import { View } from 'react-native';
-import { Provider } from 'react-redux';           // ← add this
-import AppNavigationNi from './src/navigations';
-import store from './src/app/store';               // ← path to your store file
+import { View, StyleSheet } from 'react-native';
+import { Provider } from 'react-redux';
+import { PersistGate } from 'redux-persist/integration/react';
 
-const App = () => (
-  <Provider store={store}>
-    <View style={{ flex: 1 }}>
-      <AppNavigationNi />
-    </View>
-  </Provider>
-);
+import AppNavigationNi from './src/navigations';
+import rootSaga from './src/app/sagas';
+import configureStore from './src/app/reducers';
+
+// Configure Redux store and saga
+const { store, persistor, runSaga } = configureStore();
+runSaga(rootSaga);
+
+const App = () => {
+  return (
+    <Provider store={store}>
+      <PersistGate loading={null} persistor={persistor}>
+        <View style={styles.container}>
+          <AppNavigationNi />
+        </View>
+      </PersistGate>
+    </Provider>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+});
 
 export default App;

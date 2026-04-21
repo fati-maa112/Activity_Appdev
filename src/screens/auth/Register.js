@@ -1,307 +1,173 @@
-import { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
-  Alert,
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
   KeyboardAvoidingView,
   Platform,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+  ScrollView,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { useDispatch, useSelector } from 'react-redux';               // ← added
-import CustomTextInput from '../../components/CustomTextInput';
+import { useDispatch, useSelector } from 'react-redux';
 import { ROUTES } from '../../utils';
-import {
-  userRegisterRequest,
-  userLoginRequest,
-} from '../../app/actions';                                            // ← added
-import { Animated, ActivityIndicator } from 'react-native';
-import MaterialIcons from 'react-native-vector-icons/MaterialIcons'; // If not using Expo, use react-native-vector-icons
+import { userRegister, resetRegister } from '../../app/reducers/auth';
+
+const COLORS = {
+  primary: '#c45114',
+  secondary: '#f97316',
+  background: '#f5f6fa',
+  card: '#ffffff',
+  inputBg: '#e2e8f0',
+  textDark: '#1e293b',
+  textLight: '#ffffff',
+  error: '#ff4d4d',
+};
 
 const Register = () => {
   const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+
   const navigation = useNavigation();
   const dispatch = useDispatch();
-  const { data, isLoading, isError } = useSelector(s => s.auth);
-  const [fadeAnim] = useState(new Animated.Value(0));
-  const [showError, setShowError] = useState('');
+  const { isLoading, isError, isSuccess } = useSelector(
+    state => state.auth.register,
+  );
 
   useEffect(() => {
-    Animated.timing(fadeAnim, {
-      toValue: 1,
-      duration: 600,
-      useNativeDriver: true,
-    }).start();
-  }, []);
+    if (isSuccess) {
+      dispatch(resetRegister());
+      navigation.navigate(ROUTES.LOGIN);
+    }
+  }, [isSuccess]);
 
   const handleRegister = () => {
-    if (!username || !email || !password || !confirmPassword) {
-      setShowError('Please fill in all fields.');
-      return;
-    }
-    if (password !== confirmPassword) {
-      setShowError('Passwords do not match.');
-      return;
-    }
-    setShowError('');
-    dispatch(userRegisterRequest({ username, email, password }));
+    if (!username || !password) return;
+    dispatch(userRegister({ username, password }));
   };
-
-  useEffect(() => {
-    if (data) {
-      // after registration you might want to log the user in automatically
-      dispatch(userLoginRequest({ username: email, password }));
-      navigation.reset({ index: 0, routes: [{ name: ROUTES.HOME }] });
-    }
-  }, [data, dispatch, navigation]);
 
   return (
     <KeyboardAvoidingView
       style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      accessible accessibilityLabel="Register Screen"
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
-      <Animated.View style={[styles.inner, { opacity: fadeAnim }]}> {/* Fade-in animation */}
-        {/* Brand */}
-        <Text style={styles.brand}>NATURAE SKINCARE</Text>
-        <Text style={styles.subtitle}>Create your account</Text>
+      <ScrollView contentContainerStyle={styles.scrollContainer}>
+        {/* HEADER */}
+        <View style={styles.header}>
+          <Text style={styles.title}>Create Account</Text>
+          <Text style={styles.subtitle}>
+            Sign up to get started with our app
+          </Text>
+        </View>
 
-        {/* Form */}
-        <View style={styles.form}>
-          <Text style={styles.label}>Username</Text>
-          <View style={styles.inputIconRow}>
-            <MaterialIcons name="person" size={22} color={OLIVE_DK} style={styles.inputIcon} />
-            <CustomTextInput
-              placeholder="Username"
+        {/* FORM CARD */}
+        <View style={styles.card}>
+          <Text style={styles.formTitle}>Register</Text>
+
+          {/* USERNAME */}
+          <View style={styles.inputWrapper}>
+            <Text style={styles.label}>Username</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter username"
+              placeholderTextColor="#888"
               value={username}
-              onChangeText={val => setUsername(val)}
-              containerStyle={styles.inputContainer}
-              textStyle={styles.inputText}
-              accessible accessibilityLabel="Username Input"
-            />
-          </View>
-          {showError && !username && <Text style={styles.errorText}>{showError}</Text>}
-
-          <Text style={styles.label}>Email Address</Text>
-          <View style={styles.inputIconRow}>
-            <MaterialIcons name="email" size={22} color={OLIVE_DK} style={styles.inputIcon} />
-            <CustomTextInput
-              placeholder="Email Address"
-              keyboardType="email-address"
+              onChangeText={setUsername}
               autoCapitalize="none"
-              value={email}
-              onChangeText={val => setEmail(val)}
-              containerStyle={styles.inputContainer}
-              textStyle={styles.inputText}
-              accessible accessibilityLabel="Email Input"
             />
           </View>
-          {showError && !email && <Text style={styles.errorText}>{showError}</Text>}
 
-          <Text style={styles.label}>Password</Text>
-          <View style={styles.inputIconRow}>
-            <MaterialIcons name="lock" size={22} color={OLIVE_DK} style={styles.inputIcon} />
-            <CustomTextInput
-              placeholder="Password"
-              secureTextEntry
+          {/* PASSWORD */}
+          <View style={styles.inputWrapper}>
+            <Text style={styles.label}>Password</Text>
+            <TextInput
+              style={[styles.input, isError && styles.inputError]}
+              placeholder="Enter password"
+              placeholderTextColor="#888"
               value={password}
-              onChangeText={val => setPassword(val)}
-              containerStyle={styles.inputContainer}
-              textStyle={styles.inputText}
-              accessible accessibilityLabel="Password Input"
-            />
-          </View>
-          {showError && !password && <Text style={styles.errorText}>{showError}</Text>}
-
-          <Text style={styles.label}>Confirm Password</Text>
-          <View style={styles.inputIconRow}>
-            <MaterialIcons name="lock" size={22} color={OLIVE_DK} style={styles.inputIcon} />
-            <CustomTextInput
-              placeholder="Confirm Password"
+              onChangeText={setPassword}
               secureTextEntry
-              value={confirmPassword}
-              onChangeText={val => setConfirmPassword(val)}
-              containerStyle={[styles.inputContainer, { marginBottom: 0 }]}
-              textStyle={styles.inputText}
-              accessible accessibilityLabel="Confirm Password Input"
             />
           </View>
-          {showError && (!confirmPassword || password !== confirmPassword) && <Text style={styles.errorText}>{showError}</Text>}
-        </View>
 
-        {/* Register Button */}
-        <TouchableOpacity
-          style={styles.registerBtn}
-          onPress={handleRegister}
-          activeOpacity={0.85}
-          accessible accessibilityLabel="Register Button"
-        >
-          {isLoading ? (
-            <ActivityIndicator color={WHITE} size="small" />
-          ) : (
-            <Text style={styles.registerBtnText}>Create Account</Text>
+          {isError && (
+            <Text style={styles.errorText}>Registration failed. Try again.</Text>
           )}
-        </TouchableOpacity>
 
-        {/* Login link */}
-        <View style={styles.loginRow}>
-          <Text style={styles.loginText}>Already have an account? </Text>
-          <TouchableOpacity onPress={() => navigation.goBack()} accessible accessibilityLabel="Login Link">
-            <Text style={styles.loginLink}>Log In</Text>
+          {/* REGISTER BUTTON */}
+          <TouchableOpacity
+            style={styles.button}
+            onPress={handleRegister}
+            disabled={isLoading}
+          >
+            <Text style={styles.buttonText}>
+              {isLoading ? 'Registering...' : 'Register'}
+            </Text>
           </TouchableOpacity>
-        </View>
 
-        {/* Support */}
-        <View style={styles.supportWrap}>
-          <Text style={styles.supportTitle}>Contact Support</Text>
-          <View style={styles.supportRow}>
-            <Text style={styles.supportLink}>📞 Phone</Text>
-            <Text style={styles.supportDivider}>  |  </Text>
-            <Text style={styles.supportLink}>✉️ Email</Text>
+          {/* LOGIN LINK */}
+          <View style={styles.footerRow}>
+            <Text style={styles.footerText}>Already have an account? </Text>
+            <TouchableOpacity onPress={() => navigation.navigate(ROUTES.LOGIN)}>
+              <Text style={styles.footerLink}>Sign in</Text>
+            </TouchableOpacity>
           </View>
         </View>
-      </Animated.View>
+      </ScrollView>
     </KeyboardAvoidingView>
   );
 };
 
-const BG        = '#faf7f0';
-const SAND      = '#b79b7f';
-const OLIVE     = '#7a8661';
-const OLIVE_LT  = '#9ba882';
-const OLIVE_DK  = '#5f6b4d';
-const WHITE     = '#fff';
-
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: BG,
-  },
-  inner: {
-    flex: 1,
-    justifyContent: 'center',
-    paddingHorizontal: 32,
-  },
-  brand: {
-    color: OLIVE_DK,
-    fontSize: 36,
-    fontWeight: '800',
-    textAlign: 'center',
-    letterSpacing: 2,
-    marginBottom: 6,
-  },
-  subtitle: {
-    color: SAND,
-    fontSize: 14,
-    textAlign: 'center',
-    marginBottom: 36,
-    fontWeight: '500',
-    letterSpacing: 0.4,
-  },
-  form: {
-    marginBottom: 24,
-  },
-  label: {
-    color: OLIVE_DK,
-    fontSize: 13,
-    fontWeight: '600',
-    marginBottom: 6,
-    letterSpacing: 0.4,
-  },
-  inputContainer: {
-    width: '100%',
-    marginBottom: 20,
-    backgroundColor: WHITE,
-    borderRadius: 10,
-    borderWidth: 1.5,
-    borderColor: 'rgba(183,155,127,0.35)',
-    shadowColor: SAND,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.12,
-    shadowRadius: 6,
-    elevation: 2,
-  },
-  inputText: {
-    fontSize: 16,
-    color: '#3a3228',
-    paddingHorizontal: 14,
-    paddingVertical: 13,
-  },
-  inputIconRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  inputIcon: {
-    marginRight: 8,
-  },
-  errorText: {
-    color: '#d32f2f',
-    fontSize: 13,
-    marginBottom: 8,
-    marginLeft: 8,
-  },
-  registerBtn: {
-    backgroundColor: OLIVE,
-    borderRadius: 10,
-    paddingVertical: 16,
-    alignItems: 'center',
-    marginBottom: 18,
-    shadowColor: OLIVE_DK,
+  container: { flex: 1, backgroundColor: COLORS.background },
+  scrollContainer: { flexGrow: 1, justifyContent: 'center', padding: 20 },
+
+  header: { marginBottom: 30, alignItems: 'center' },
+  title: { fontSize: 32, fontWeight: 'bold', color: COLORS.primary },
+  subtitle: { fontSize: 16, color: '#64748b', marginTop: 5, textAlign: 'center' },
+
+  card: {
+    backgroundColor: COLORS.card,
+    borderRadius: 20,
+    padding: 25,
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 5 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.1,
     shadowRadius: 10,
-    elevation: 6,
+    elevation: 5,
   },
-  registerBtnText: {  
-    color: WHITE,
-    fontSize: 17,
-    fontWeight: '700',
-    letterSpacing: 0.8,
+
+  formTitle: { fontSize: 22, fontWeight: 'bold', color: COLORS.textDark, marginBottom: 20 },
+
+  inputWrapper: { marginBottom: 18 },
+  label: { fontSize: 14, color: '#475569', marginBottom: 6 },
+  input: {
+    backgroundColor: COLORS.inputBg,
+    borderRadius: 12,
+    height: 50,
+    paddingHorizontal: 15,
+    fontSize: 16,
+    borderWidth: 1,
+    borderColor: '#d1d5db',
   },
-  loginRow: {
-    flexDirection: 'row',
+  inputError: { borderColor: COLORS.error },
+
+  errorText: { color: COLORS.error, fontSize: 12, marginTop: -10, marginBottom: 10 },
+
+  button: {
+    backgroundColor: COLORS.secondary,
+    height: 50,
+    borderRadius: 12,
     justifyContent: 'center',
-    marginBottom: 36,
-  },
-  loginText: {
-    color: OLIVE_LT,
-    fontSize: 14,
-  },
-  loginLink: {
-    color: OLIVE_DK,
-    fontSize: 14,
-    fontWeight: '700',
-  },
-  supportWrap: {
     alignItems: 'center',
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(183,155,127,0.25)',
-    paddingTop: 20,
-    marginBottom: 24,
+    marginTop: 10,
   },
-  supportTitle: {
-    color: OLIVE_DK,
-    fontSize: 13,
-    fontWeight: '600',
-    marginBottom: 8,
-  },
-  supportRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  supportLink: {
-    color: SAND,
-    fontSize: 13,
-  },
-  supportDivider: {
-    color: 'rgba(183,155,127,0.4)',
-    fontSize: 13,
-  },
+  buttonText: { color: COLORS.textLight, fontSize: 16, fontWeight: 'bold' },
+
+  footerRow: { flexDirection: 'row', justifyContent: 'center', marginTop: 20 },
+  footerText: { color: '#64748b', fontSize: 14 },
+  footerLink: { color: COLORS.primary, fontWeight: 'bold', fontSize: 14 },
 });
 
 export default Register;
