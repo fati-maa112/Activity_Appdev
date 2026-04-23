@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import {
   Alert,
   KeyboardAvoidingView,
@@ -7,119 +7,65 @@ import {
   Text,
   TouchableOpacity,
   View,
-  Animated,
-  ActivityIndicator,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { useDispatch, useSelector } from 'react-redux';
 import CustomTextInput from '../../components/CustomTextInput';
 import { ROUTES } from '../../utils';
-import { userLoginRequest } from '../../app/actions';
-import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 
 const Login = () => {
   const [emailAdd, setEmailAdd] = useState('');
   const [password, setPassword] = useState('');
-  const [emailError, setEmailError] = useState('');
-  const [passwordError, setPasswordError] = useState('');
   const navigation = useNavigation();
-  const dispatch = useDispatch();
-  const { data, isLoading } = useSelector(s => s.auth);
-  const [fadeAnim] = useState(new Animated.Value(0));
-
-  useEffect(() => {
-    Animated.timing(fadeAnim, {
-      toValue: 1,
-      duration: 600,
-      useNativeDriver: true,
-    }).start();
-  }, []);
-
-  const handleLogin = async () => {
-    // Reset errors
-    setEmailError('');
-    setPasswordError('');
-
-    let hasError = false;
-    if (!emailAdd.trim()) {
-      setEmailError('Please enter your username.');
-      hasError = true;
-    }
-    if (!password.trim()) {
-      setPasswordError('Please enter your password.');
-      hasError = true;
-    }
-
-    if (hasError) return;
-
-    dispatch(userLoginRequest({ username: emailAdd.trim(), password: password.trim() }));
-  };
-
-  useEffect(() => {
-    if (data) {
-      navigation.reset({ index: 0, routes: [{ name: ROUTES.HOME }] });
-    }
-  }, [data, navigation]);
 
   return (
     <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      accessible
-      accessibilityLabel="Login Screen"
     >
-      <Animated.View style={[styles.inner, { opacity: fadeAnim }]}>
+      <View style={styles.inner}>
+        {/* Brand */}
         <Text style={styles.brand}>NATURAE</Text>
 
+        {/* Form */}
         <View style={styles.form}>
           <Text style={styles.label}>Username</Text>
-          <View style={styles.inputIconRow}>
-            <MaterialIcons name="person" size={22} color={OLIVE_DK} style={styles.inputIcon} />
-            <CustomTextInput
-              label="Username"
-              placeholder="Username"
-              value={emailAdd}
-              onChangeText={val => setEmailAdd(val)}
-              containerStyle={styles.inputContainer}
-              textStyle={styles.inputText}
-              accessible
-              accessibilityLabel="Username Input"
-            />
-          </View>
-          {emailError ? <Text style={styles.errorText}>{emailError}</Text> : null}
+          <CustomTextInput
+            placeholder="Username"
+            value={val => setEmailAdd(val)}
+            containerStyle={styles.inputContainer}
+            textStyle={styles.inputText}
+          />
 
           <Text style={styles.label}>Password</Text>
-          <View style={styles.inputIconRow}>
-            <MaterialIcons name="lock" size={22} color={OLIVE_DK} style={styles.inputIcon} />
-            <CustomTextInput
-              label="Password"
-              placeholder="Password"
-              secureTextEntry
-              value={password}
-              onChangeText={val => setPassword(val)}
-              containerStyle={[styles.inputContainer, { marginBottom: 0 }]}
-              textStyle={styles.inputText}
-              accessible
-              accessibilityLabel="Password Input"
-            />
-          </View>
-          {passwordError ? <Text style={styles.errorText}>{passwordError}</Text> : null}
+          <CustomTextInput
+            placeholder="Password"
+            secureTextEntry
+            value={val => setPassword(val)}
+            containerStyle={[styles.inputContainer, { marginBottom: 0 }]}
+            textStyle={styles.inputText}
+          />
         </View>
 
+        {/* Login Button */}
         <TouchableOpacity
           style={styles.loginBtn}
-          onPress={handleLogin}
+          onPress={() => {
+            if (!emailAdd || !password) {
+              Alert.alert('Incorrect Credentials', 'Please try again!');
+              return;
+            }
+          }}
           activeOpacity={0.85}
-          accessible
-          accessibilityLabel="Login Button"
         >
-          {isLoading ? <ActivityIndicator color={WHITE} size="small" /> : <Text style={styles.loginBtnText}>Log In</Text>}
+          <Text style={styles.loginBtnText}>Log In</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.forgotWrap} accessible accessibilityLabel="Forgot Login">
+        {/* Forgot */}
+        <TouchableOpacity style={styles.forgotWrap}>
           <Text style={styles.forgotText}>Forgot Login?</Text>
         </TouchableOpacity>
 
+        {/* Support */}
         <View style={styles.supportWrap}>
           <Text style={styles.supportTitle}>Contact Support</Text>
           <View style={styles.supportRow}>
@@ -129,50 +75,137 @@ const Login = () => {
           </View>
         </View>
 
+        {/* Register link */}
         <View style={styles.registerRow}>
           <Text style={styles.registerText}>Don't have an account? </Text>
-          <TouchableOpacity onPress={() => navigation.navigate(ROUTES.REGISTER)} accessible accessibilityLabel="Register Link">
+          <TouchableOpacity onPress={() => navigation.navigate(ROUTES.REGISTER)}>
             <Text style={styles.registerLink}>Register</Text>
           </TouchableOpacity>
         </View>
-      </Animated.View>
+      </View>
     </KeyboardAvoidingView>
   );
 };
 
-// Color palette
-const BG = '#fffdf9';
-const SAND = '#c9b79c';
-const OLIVE = '#6a7b5a';
-const OLIVE_LT = '#a3b194';
-const OLIVE_DK = '#4d5d43';
-const WHITE = '#ffffff';
-const ACCENT = '#d7ccc8';
-const INPUT_BG = '#fcfcfb';
+const BG        = '#faf7f0';
+const SAND      = '#b79b7f';
+const OLIVE     = '#7a8661';
+const OLIVE_LT  = '#9ba882';
+const OLIVE_DK  = '#5f6b4d';
+const WHITE     = '#fff';
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: BG },
-  inner: { flex: 1, justifyContent: 'center', paddingHorizontal: 32 },
-  brand: { color: OLIVE_DK, fontSize: 40, fontWeight: '900', textAlign: 'center', letterSpacing: 3, marginBottom: 56, fontFamily: Platform.select({ ios: 'Georgia', android: 'serif' }) },
-  form: { marginBottom: 32 },
-  label: { color: OLIVE_DK, fontSize: 14, fontWeight: '700', marginBottom: 8, letterSpacing: 0.5 },
-  inputContainer: { width: '100%', marginBottom: 22, backgroundColor: INPUT_BG, borderRadius: 12, borderWidth: 1, borderColor: ACCENT, paddingHorizontal: 10, paddingVertical: 6 },
-  inputText: { fontSize: 16, color: OLIVE_DK, paddingHorizontal: 10, paddingVertical: 12 },
-  inputIconRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
-  inputIcon: { marginRight: 8 },
-  errorText: { color: '#d32f2f', fontSize: 13, marginBottom: 8, marginLeft: 8 },
-  loginBtn: { backgroundColor: OLIVE_DK, borderRadius: 12, paddingVertical: 18, alignItems: 'center', marginBottom: 24, shadowColor: OLIVE_DK, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.25, shadowRadius: 8, elevation: 4 },
-  loginBtnText: { color: WHITE, fontSize: 18, fontWeight: '800', letterSpacing: 1 },
-  forgotWrap: { alignItems: 'center', marginBottom: 28 },
-  forgotText: { color: SAND, fontSize: 14, fontWeight: '500' },
-  supportWrap: { alignItems: 'center', borderTopWidth: 1, borderTopColor: ACCENT, paddingTop: 18, marginBottom: 28 },
-  supportTitle: { color: OLIVE_DK, fontSize: 13, fontWeight: '600', marginBottom: 6 },
-  supportRow: { flexDirection: 'row', alignItems: 'center' },
-  supportLink: { color: SAND, fontSize: 13 },
-  supportDivider: { color: ACCENT, fontSize: 13 },
-  registerRow: { flexDirection: 'row', justifyContent: 'center' },
-  registerText: { color: OLIVE_LT, fontSize: 14 },
-  registerLink: { color: OLIVE_DK, fontSize: 14, fontWeight: '700' },
+  container: {
+    flex: 1,
+    backgroundColor: BG,
+  },
+  inner: {
+    flex: 1,
+    justifyContent: 'center',
+    paddingHorizontal: 32,
+  },
+  brand: {
+    color: OLIVE_DK,
+    fontSize: 36,
+    fontWeight: '800',
+    textAlign: 'center',
+    letterSpacing: 2,
+    marginBottom: 48,
+  },
+  form: {
+    marginBottom: 24,
+  },
+  label: {
+    color: OLIVE_DK,
+    fontSize: 13,
+    fontWeight: '600',
+    marginBottom: 6,
+    letterSpacing: 0.4,
+  },
+  inputContainer: {
+    width: '100%',
+    marginBottom: 20,
+    backgroundColor: WHITE,
+    borderRadius: 10,
+    borderWidth: 1.5,
+    borderColor: 'rgba(183,155,127,0.35)',
+    shadowColor: SAND,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.12,
+    shadowRadius: 6,
+    elevation: 2,
+  },
+  inputText: {
+    fontSize: 16,
+    color: '#3a3228',
+    paddingHorizontal: 14,
+    paddingVertical: 13,
+  },
+  loginBtn: {
+    backgroundColor: OLIVE,
+    borderRadius: 10,
+    paddingVertical: 16,
+    alignItems: 'center',
+    marginBottom: 18,
+    shadowColor: OLIVE_DK,
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    elevation: 6,
+  },
+  loginBtnText: {
+    color: WHITE,
+    fontSize: 17,
+    fontWeight: '700',
+    letterSpacing: 0.8,
+  },
+  forgotWrap: {
+    alignItems: 'center',
+    marginBottom: 40,
+  },
+  forgotText: {
+    color: SAND,
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  supportWrap: {
+    alignItems: 'center',
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(183,155,127,0.25)',
+    paddingTop: 20,
+    marginBottom: 24,
+  },
+  supportTitle: {
+    color: OLIVE_DK,
+    fontSize: 13,
+    fontWeight: '600',
+    marginBottom: 8,
+  },
+  supportRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  supportLink: {
+    color: SAND,
+    fontSize: 13,
+  },
+  supportDivider: {
+    color: 'rgba(183,155,127,0.4)',
+    fontSize: 13,
+  },
+  registerRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+  },
+  registerText: {
+    color: OLIVE_LT,
+    fontSize: 14,
+  },
+  registerLink: {
+    color: OLIVE_DK,
+    fontSize: 14,
+    fontWeight: '700',
+  },
 });
 
 export default Login;

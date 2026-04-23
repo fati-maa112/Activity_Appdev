@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import {
   Alert,
   KeyboardAvoidingView,
@@ -9,15 +9,7 @@ import {
   View,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { useDispatch, useSelector } from 'react-redux';               // ← added
 import CustomTextInput from '../../components/CustomTextInput';
-import { ROUTES } from '../../utils';
-import {
-  userRegisterRequest,
-  userLoginRequest,
-} from '../../app/actions';                                            // ← added
-import { Animated, ActivityIndicator } from 'react-native';
-import MaterialIcons from 'react-native-vector-icons/MaterialIcons'; // If not using Expo, use react-native-vector-icons
 
 const Register = () => {
   const [username, setUsername] = useState('');
@@ -25,47 +17,25 @@ const Register = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const navigation = useNavigation();
-  const dispatch = useDispatch();
-  const { data, isLoading, isError } = useSelector(s => s.auth);
-  const [fadeAnim] = useState(new Animated.Value(0));
-  const [showError, setShowError] = useState('');
-
-  useEffect(() => {
-    Animated.timing(fadeAnim, {
-      toValue: 1,
-      duration: 600,
-      useNativeDriver: true,
-    }).start();
-  }, []);
 
   const handleRegister = () => {
     if (!username || !email || !password || !confirmPassword) {
-      setShowError('Please fill in all fields.');
+      Alert.alert('Missing Fields', 'Please fill in all fields.');
       return;
     }
     if (password !== confirmPassword) {
-      setShowError('Passwords do not match.');
+      Alert.alert('Password Mismatch', 'Passwords do not match.');
       return;
     }
-    setShowError('');
-    dispatch(userRegisterRequest({ username, email, password }));
+    // TODO: call your register API
   };
-
-  useEffect(() => {
-    if (data) {
-      // after registration you might want to log the user in automatically
-      dispatch(userLoginRequest({ username: email, password }));
-      navigation.reset({ index: 0, routes: [{ name: ROUTES.HOME }] });
-    }
-  }, [data, dispatch, navigation]);
 
   return (
     <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      accessible accessibilityLabel="Register Screen"
     >
-      <Animated.View style={[styles.inner, { opacity: fadeAnim }]}> {/* Fade-in animation */}
+      <View style={styles.inner}>
         {/* Brand */}
         <Text style={styles.brand}>NATURAE SKINCARE</Text>
         <Text style={styles.subtitle}>Create your account</Text>
@@ -73,64 +43,40 @@ const Register = () => {
         {/* Form */}
         <View style={styles.form}>
           <Text style={styles.label}>Username</Text>
-          <View style={styles.inputIconRow}>
-            <MaterialIcons name="person" size={22} color={OLIVE_DK} style={styles.inputIcon} />
-            <CustomTextInput
-              placeholder="Username"
-              value={username}
-              onChangeText={val => setUsername(val)}
-              containerStyle={styles.inputContainer}
-              textStyle={styles.inputText}
-              accessible accessibilityLabel="Username Input"
-            />
-          </View>
-          {showError && !username && <Text style={styles.errorText}>{showError}</Text>}
+          <CustomTextInput
+            placeholder="Username"
+            value={val => setUsername(val)}
+            containerStyle={styles.inputContainer}
+            textStyle={styles.inputText}
+          />
 
           <Text style={styles.label}>Email Address</Text>
-          <View style={styles.inputIconRow}>
-            <MaterialIcons name="email" size={22} color={OLIVE_DK} style={styles.inputIcon} />
-            <CustomTextInput
-              placeholder="Email Address"
-              keyboardType="email-address"
-              autoCapitalize="none"
-              value={email}
-              onChangeText={val => setEmail(val)}
-              containerStyle={styles.inputContainer}
-              textStyle={styles.inputText}
-              accessible accessibilityLabel="Email Input"
-            />
-          </View>
-          {showError && !email && <Text style={styles.errorText}>{showError}</Text>}
+          <CustomTextInput
+            placeholder="Email Address"
+            keyboardType="email-address"
+            autoCapitalize="none"
+            value={val => setEmail(val)}
+            containerStyle={styles.inputContainer}
+            textStyle={styles.inputText}
+          />
 
           <Text style={styles.label}>Password</Text>
-          <View style={styles.inputIconRow}>
-            <MaterialIcons name="lock" size={22} color={OLIVE_DK} style={styles.inputIcon} />
-            <CustomTextInput
-              placeholder="Password"
-              secureTextEntry
-              value={password}
-              onChangeText={val => setPassword(val)}
-              containerStyle={styles.inputContainer}
-              textStyle={styles.inputText}
-              accessible accessibilityLabel="Password Input"
-            />
-          </View>
-          {showError && !password && <Text style={styles.errorText}>{showError}</Text>}
+          <CustomTextInput
+            placeholder="Password"
+            secureTextEntry
+            value={val => setPassword(val)}
+            containerStyle={styles.inputContainer}
+            textStyle={styles.inputText}
+          />
 
           <Text style={styles.label}>Confirm Password</Text>
-          <View style={styles.inputIconRow}>
-            <MaterialIcons name="lock" size={22} color={OLIVE_DK} style={styles.inputIcon} />
-            <CustomTextInput
-              placeholder="Confirm Password"
-              secureTextEntry
-              value={confirmPassword}
-              onChangeText={val => setConfirmPassword(val)}
-              containerStyle={[styles.inputContainer, { marginBottom: 0 }]}
-              textStyle={styles.inputText}
-              accessible accessibilityLabel="Confirm Password Input"
-            />
-          </View>
-          {showError && (!confirmPassword || password !== confirmPassword) && <Text style={styles.errorText}>{showError}</Text>}
+          <CustomTextInput
+            placeholder="Confirm Password"
+            secureTextEntry
+            value={val => setConfirmPassword(val)}
+            containerStyle={[styles.inputContainer, { marginBottom: 0 }]}
+            textStyle={styles.inputText}
+          />
         </View>
 
         {/* Register Button */}
@@ -138,19 +84,14 @@ const Register = () => {
           style={styles.registerBtn}
           onPress={handleRegister}
           activeOpacity={0.85}
-          accessible accessibilityLabel="Register Button"
         >
-          {isLoading ? (
-            <ActivityIndicator color={WHITE} size="small" />
-          ) : (
-            <Text style={styles.registerBtnText}>Create Account</Text>
-          )}
+          <Text style={styles.registerBtnText}>Create Account</Text>
         </TouchableOpacity>
 
         {/* Login link */}
         <View style={styles.loginRow}>
           <Text style={styles.loginText}>Already have an account? </Text>
-          <TouchableOpacity onPress={() => navigation.goBack()} accessible accessibilityLabel="Login Link">
+          <TouchableOpacity onPress={() => navigation.goBack()}>
             <Text style={styles.loginLink}>Log In</Text>
           </TouchableOpacity>
         </View>
@@ -164,7 +105,7 @@ const Register = () => {
             <Text style={styles.supportLink}>✉️ Email</Text>
           </View>
         </View>
-      </Animated.View>
+      </View>
     </KeyboardAvoidingView>
   );
 };
@@ -231,20 +172,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 13,
   },
-  inputIconRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  inputIcon: {
-    marginRight: 8,
-  },
-  errorText: {
-    color: '#d32f2f',
-    fontSize: 13,
-    marginBottom: 8,
-    marginLeft: 8,
-  },
   registerBtn: {
     backgroundColor: OLIVE,
     borderRadius: 10,
@@ -257,7 +184,7 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     elevation: 6,
   },
-  registerBtnText: {  
+  registerBtnText: {
     color: WHITE,
     fontSize: 17,
     fontWeight: '700',
@@ -282,7 +209,6 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: 'rgba(183,155,127,0.25)',
     paddingTop: 20,
-    marginBottom: 24,
   },
   supportTitle: {
     color: OLIVE_DK,

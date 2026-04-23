@@ -1,4 +1,5 @@
-const BASE_URL = 'http://192.168.254.109:3000/api';
+const BASE_URL = 'http://10.219.115.245:8000/api'; // change to your backend IP
+
 const options = {
   headers: {
     Accept: 'application/json',
@@ -10,11 +11,9 @@ export async function authLogin({ username, password }) {
   const response = await fetch(BASE_URL + '/login', {
     method: 'POST',
     ...options,
-    body: JSON.stringify({
-      username,
-      password,
-    }),
+    body: JSON.stringify({ username, password }),
   });
+
   const data = await response.json();
 
   if (response.ok) {
