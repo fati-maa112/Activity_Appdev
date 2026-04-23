@@ -1,173 +1,233 @@
-import React, { useEffect, useState } from 'react';
+import { useState } from 'react';
 import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
+  Alert,
   KeyboardAvoidingView,
   Platform,
-  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { useDispatch, useSelector } from 'react-redux';
-import { ROUTES } from '../../utils';
-import { userRegister, resetRegister } from '../../app/reducers/auth';
-
-const COLORS = {
-  primary: '#c45114',
-  secondary: '#f97316',
-  background: '#f5f6fa',
-  card: '#ffffff',
-  inputBg: '#e2e8f0',
-  textDark: '#1e293b',
-  textLight: '#ffffff',
-  error: '#ff4d4d',
-};
+import CustomTextInput from '../../components/CustomTextInput';
 
 const Register = () => {
   const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-
+  const [confirmPassword, setConfirmPassword] = useState('');
   const navigation = useNavigation();
-  const dispatch = useDispatch();
-  const { isLoading, isError, isSuccess } = useSelector(
-    state => state.auth.register,
-  );
-
-  useEffect(() => {
-    if (isSuccess) {
-      dispatch(resetRegister());
-      navigation.navigate(ROUTES.LOGIN);
-    }
-  }, [isSuccess]);
 
   const handleRegister = () => {
-    if (!username || !password) return;
-    dispatch(userRegister({ username, password }));
+    if (!username || !email || !password || !confirmPassword) {
+      Alert.alert('Missing Fields', 'Please fill in all fields.');
+      return;
+    }
+    if (password !== confirmPassword) {
+      Alert.alert('Password Mismatch', 'Passwords do not match.');
+      return;
+    }
+    // TODO: call your register API
   };
 
   return (
     <KeyboardAvoidingView
       style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
-        {/* HEADER */}
-        <View style={styles.header}>
-          <Text style={styles.title}>Create Account</Text>
-          <Text style={styles.subtitle}>
-            Sign up to get started with our app
-          </Text>
+      <View style={styles.inner}>
+        {/* Brand */}
+        <Text style={styles.brand}>NATURAE SKINCARE</Text>
+        <Text style={styles.subtitle}>Create your account</Text>
+
+        {/* Form */}
+        <View style={styles.form}>
+          <Text style={styles.label}>Username</Text>
+          <CustomTextInput
+            placeholder="Username"
+            value={val => setUsername(val)}
+            containerStyle={styles.inputContainer}
+            textStyle={styles.inputText}
+          />
+
+          <Text style={styles.label}>Email Address</Text>
+          <CustomTextInput
+            placeholder="Email Address"
+            keyboardType="email-address"
+            autoCapitalize="none"
+            value={val => setEmail(val)}
+            containerStyle={styles.inputContainer}
+            textStyle={styles.inputText}
+          />
+
+          <Text style={styles.label}>Password</Text>
+          <CustomTextInput
+            placeholder="Password"
+            secureTextEntry
+            value={val => setPassword(val)}
+            containerStyle={styles.inputContainer}
+            textStyle={styles.inputText}
+          />
+
+          <Text style={styles.label}>Confirm Password</Text>
+          <CustomTextInput
+            placeholder="Confirm Password"
+            secureTextEntry
+            value={val => setConfirmPassword(val)}
+            containerStyle={[styles.inputContainer, { marginBottom: 0 }]}
+            textStyle={styles.inputText}
+          />
         </View>
 
-        {/* FORM CARD */}
-        <View style={styles.card}>
-          <Text style={styles.formTitle}>Register</Text>
+        {/* Register Button */}
+        <TouchableOpacity
+          style={styles.registerBtn}
+          onPress={handleRegister}
+          activeOpacity={0.85}
+        >
+          <Text style={styles.registerBtnText}>Create Account</Text>
+        </TouchableOpacity>
 
-          {/* USERNAME */}
-          <View style={styles.inputWrapper}>
-            <Text style={styles.label}>Username</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Enter username"
-              placeholderTextColor="#888"
-              value={username}
-              onChangeText={setUsername}
-              autoCapitalize="none"
-            />
-          </View>
-
-          {/* PASSWORD */}
-          <View style={styles.inputWrapper}>
-            <Text style={styles.label}>Password</Text>
-            <TextInput
-              style={[styles.input, isError && styles.inputError]}
-              placeholder="Enter password"
-              placeholderTextColor="#888"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-            />
-          </View>
-
-          {isError && (
-            <Text style={styles.errorText}>Registration failed. Try again.</Text>
-          )}
-
-          {/* REGISTER BUTTON */}
-          <TouchableOpacity
-            style={styles.button}
-            onPress={handleRegister}
-            disabled={isLoading}
-          >
-            <Text style={styles.buttonText}>
-              {isLoading ? 'Registering...' : 'Register'}
-            </Text>
+        {/* Login link */}
+        <View style={styles.loginRow}>
+          <Text style={styles.loginText}>Already have an account? </Text>
+          <TouchableOpacity onPress={() => navigation.goBack()}>
+            <Text style={styles.loginLink}>Log In</Text>
           </TouchableOpacity>
+        </View>
 
-          {/* LOGIN LINK */}
-          <View style={styles.footerRow}>
-            <Text style={styles.footerText}>Already have an account? </Text>
-            <TouchableOpacity onPress={() => navigation.navigate(ROUTES.LOGIN)}>
-              <Text style={styles.footerLink}>Sign in</Text>
-            </TouchableOpacity>
+        {/* Support */}
+        <View style={styles.supportWrap}>
+          <Text style={styles.supportTitle}>Contact Support</Text>
+          <View style={styles.supportRow}>
+            <Text style={styles.supportLink}>📞 Phone</Text>
+            <Text style={styles.supportDivider}>  |  </Text>
+            <Text style={styles.supportLink}>✉️ Email</Text>
           </View>
         </View>
-      </ScrollView>
+      </View>
     </KeyboardAvoidingView>
   );
 };
 
+const BG        = '#faf7f0';
+const SAND      = '#b79b7f';
+const OLIVE     = '#7a8661';
+const OLIVE_LT  = '#9ba882';
+const OLIVE_DK  = '#5f6b4d';
+const WHITE     = '#fff';
+
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.background },
-  scrollContainer: { flexGrow: 1, justifyContent: 'center', padding: 20 },
-
-  header: { marginBottom: 30, alignItems: 'center' },
-  title: { fontSize: 32, fontWeight: 'bold', color: COLORS.primary },
-  subtitle: { fontSize: 16, color: '#64748b', marginTop: 5, textAlign: 'center' },
-
-  card: {
-    backgroundColor: COLORS.card,
-    borderRadius: 20,
-    padding: 25,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 5 },
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-    elevation: 5,
+  container: {
+    flex: 1,
+    backgroundColor: BG,
   },
-
-  formTitle: { fontSize: 22, fontWeight: 'bold', color: COLORS.textDark, marginBottom: 20 },
-
-  inputWrapper: { marginBottom: 18 },
-  label: { fontSize: 14, color: '#475569', marginBottom: 6 },
-  input: {
-    backgroundColor: COLORS.inputBg,
-    borderRadius: 12,
-    height: 50,
-    paddingHorizontal: 15,
-    fontSize: 16,
-    borderWidth: 1,
-    borderColor: '#d1d5db',
-  },
-  inputError: { borderColor: COLORS.error },
-
-  errorText: { color: COLORS.error, fontSize: 12, marginTop: -10, marginBottom: 10 },
-
-  button: {
-    backgroundColor: COLORS.secondary,
-    height: 50,
-    borderRadius: 12,
+  inner: {
+    flex: 1,
     justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 10,
+    paddingHorizontal: 32,
   },
-  buttonText: { color: COLORS.textLight, fontSize: 16, fontWeight: 'bold' },
-
-  footerRow: { flexDirection: 'row', justifyContent: 'center', marginTop: 20 },
-  footerText: { color: '#64748b', fontSize: 14 },
-  footerLink: { color: COLORS.primary, fontWeight: 'bold', fontSize: 14 },
+  brand: {
+    color: OLIVE_DK,
+    fontSize: 36,
+    fontWeight: '800',
+    textAlign: 'center',
+    letterSpacing: 2,
+    marginBottom: 6,
+  },
+  subtitle: {
+    color: SAND,
+    fontSize: 14,
+    textAlign: 'center',
+    marginBottom: 36,
+    fontWeight: '500',
+    letterSpacing: 0.4,
+  },
+  form: {
+    marginBottom: 24,
+  },
+  label: {
+    color: OLIVE_DK,
+    fontSize: 13,
+    fontWeight: '600',
+    marginBottom: 6,
+    letterSpacing: 0.4,
+  },
+  inputContainer: {
+    width: '100%',
+    marginBottom: 20,
+    backgroundColor: WHITE,
+    borderRadius: 10,
+    borderWidth: 1.5,
+    borderColor: 'rgba(183,155,127,0.35)',
+    shadowColor: SAND,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.12,
+    shadowRadius: 6,
+    elevation: 2,
+  },
+  inputText: {
+    fontSize: 16,
+    color: '#3a3228',
+    paddingHorizontal: 14,
+    paddingVertical: 13,
+  },
+  registerBtn: {
+    backgroundColor: OLIVE,
+    borderRadius: 10,
+    paddingVertical: 16,
+    alignItems: 'center',
+    marginBottom: 18,
+    shadowColor: OLIVE_DK,
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    elevation: 6,
+  },
+  registerBtnText: {
+    color: WHITE,
+    fontSize: 17,
+    fontWeight: '700',
+    letterSpacing: 0.8,
+  },
+  loginRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginBottom: 36,
+  },
+  loginText: {
+    color: OLIVE_LT,
+    fontSize: 14,
+  },
+  loginLink: {
+    color: OLIVE_DK,
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  supportWrap: {
+    alignItems: 'center',
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(183,155,127,0.25)',
+    paddingTop: 20,
+  },
+  supportTitle: {
+    color: OLIVE_DK,
+    fontSize: 13,
+    fontWeight: '600',
+    marginBottom: 8,
+  },
+  supportRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  supportLink: {
+    color: SAND,
+    fontSize: 13,
+  },
+  supportDivider: {
+    color: 'rgba(183,155,127,0.4)',
+    fontSize: 13,
+  },
 });
 
 export default Register;
